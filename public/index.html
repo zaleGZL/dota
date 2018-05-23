@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <title>DOTA2_WinJudge</title>
+    <link href="https://cdn.bootcss.com/semantic-ui/2.3.1/semantic.min.css" rel="stylesheet">
+    <style>
+        .head-brand {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .head-brand>h1 {
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .camp {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .camp-name {
+            margin-bottom: 20px;
+        }
+
+        .camp-input {
+            margin-top: 20px;
+        }
+
+        .predict {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .predict-result {
+            margin: 0;
+        }
+
+        .radiant-predict-result {
+            font-size: 2rem;
+            color: red;
+        }
+
+        .dire-predict-result {
+            font-size: 2rem;
+            color: blue;
+        }
+
+        .message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div class="head-brand">
+        <img src="/dota2.svg" />
+        <h1>DOTA2</h1>
+    </div>
+
+    <div class="ui two column stackable grid content">
+        <div class="column">
+            <div class="camp">
+                <h2 class="camp-name">Radiant
+                    <span class="radiant-predict-result"></span>
+                </h2>
+
+                <select class="ui search dropdown camp-input" id="ra0">
+                    <option value="">选择英雄...</option>
+                </select>
+
+                <select class="ui search dropdown camp-input" id="ra1">
+                    <option value="">选择英雄...</option>
+                </select>
+
+                <select class="ui search dropdown camp-input" id="ra2">
+                    <option value="">选择英雄...</option>
+                </select>
+
+                <select class="ui search dropdown camp-input" id="ra3">
+                    <option value="">选择英雄...</option>
+                </select>
+                <select class="ui search dropdown camp-input" id="ra4">
+                    <option value="">选择英雄...</option>
+                </select>
+
+            </div>
+        </div>
+        <div class="column camp">
+            <div class="camp">
+                <h2 class="camp-name">Dire
+                    <span class="dire-predict-result"></span>
+                </h2>
+
+                <select class="ui search dropdown camp-input" id="di0">
+                    <option value="">选择英雄...</option>
+                </select>
+
+                <select class="ui search dropdown camp-input" id="di1">
+                    <option value="">选择英雄...</option>
+                </select>
+
+                <select class="ui search dropdown camp-input" id="di2">
+                    <option value="">选择英雄...</option>
+                </select>
+
+                <select class="ui search dropdown camp-input" id="di3">
+                    <option value="">选择英雄...</option>
+                </select>
+                <select class="ui search dropdown camp-input" id="di4">
+                    <option value="">选择英雄...</option>
+                </select>
+
+            </div>
+        </div>
+
+        <div class="predict">
+            <!-- <button class="ui basic red button huge loading disabled">胜负预测</button> -->
+            <button class="ui basic red button huge" onclick="onClickPredict()" id="predict-button">胜负预测</button>
+            <!-- <p class="message">英雄选择不符合要求</p> -->
+            <p class="message"></p>
+        </div>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/semantic-ui/2.3.1/semantic.min.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+    <script>
+        var content = ["Dragon Knight", "Shadow Fiend", "Mirana", "Pugna", "Bounty Hunter", "Alchemist", "Lifestealer", "Venomance", "Bloodseeker", "Windranger", "Bristleback", "Crystal Maiden", "Winter Wyvern", "Storm Spirit", "Weaver", "Jakiro", "Huskar", "Invoker", "Timbersaw", "Shadow Shaman", "Lich", "Phantom Assassin", "Undying", "Techies", "Clinkz", "Enchantress", "Lina", "Axe", "Sven", "Luna", "Sniper", "Drow Ranger", "Pudge", "Earthshaker", "Necrophos", "Puck", "Centaur Warrunner", "Ogre Magi", "Omniknight", "Viper", "Queen of Pain", "Troll Warlord", "Outworld Devourer", "Terrorblade", "Anti-Mage", "Dark Willow", "Pangolier", "Tusk", "Riki", "Ancient Apparition", "Tidehunter", "Death Prophet", "Silencer", "Natur’s Prophet", "Monkey King", "Legion Commander", "Sand King", "Kunkka", "Brewmaster", "Spectre", "Enigma", "Magnus", "Visage", "Keeper of the Light", "Medusa", "Zeus", "Night Stalker", "Dark Seer", "Phantom Lancer", "Earth Spirit", "Batrider", "Lion", "Slardar", "Ursa", "Gyrocopter", "Witch Doctor", "Faceless Void", "Juggernaut", "Io", "Warlock", "Nyx Assassin", "Ember Spirit", "Doom", "Shadow Demon", "Spirit Breaker", "Skywrath Mage", "Tinker", "Treant Protector", "Slark", "Dazzle", "Wraith King", "Naga Siren", "Rubick", "Tiny", "Morphling", "Chaos Knight", "Vengeful Spirit", "Clockwerk", "Underlord", "Meepo", "Disruptor", "Abaddon", "Broodmother", "Leshrac", "Templar Assassin", "Razor", "Lycan", "Bane", "Elder Titan", "Phoenix", "Oracle", "Arc Warden", "Lone Druid", "Beastmaster", "Chen"];
+        var data = []
+        for (i = 0; i < content.length; i++) {
+            data.push({ title: content[i] })
+        }
+
+        // 加载输入框中的数据
+        function loadInputData() {
+            var inputs = document.querySelectorAll('.camp-input')
+
+            var html = []
+            html.push('<option value="">选择英雄...</option>')
+
+
+            for (var j = 0; j < content.length; j++) {
+                html.push('<option value="' + content[j] + '">' + content[j] + '</option>')
+            }
+
+            for (var i = 0, length = inputs.length; i < length; i++) {
+                inputs[i].innerHTML = html
+            }
+
+
+            $('.ui.dropdown')
+                .dropdown()
+        }
+
+        // 获取用户的输入
+        function getInputData() {
+            var data = {}
+
+            var inputs = document.querySelectorAll('.camp-input > select')
+            for (var i = 0, length = inputs.length; i < length; i++) {
+                var id = inputs[i].getAttribute('id')
+                data[id] = inputs[i].value
+            }
+
+            return data
+        }
+
+        // 验证数据
+        function checkData(data) {
+            var only = {}
+
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    if (only[data[key]] !== undefined || data[key] === '') {
+                        return false
+                    }
+
+                    only[data[key]] = 1
+                }
+            }
+
+            return true
+        }
+
+        // 发送请求
+        function sendData(data) {
+            // 获取英雄名称索引值
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    data[key] = String(content.indexOf(data[key]))
+                }
+            }
+
+            // test
+            console.log(data)
+
+            // data = { ra0: '0', ra1: '1', ra2: '2', ra3: '3', ra4: '4', di0: '5', di1: '6', di2: '7', di3: '8', di4: '9' }
+
+            function send() {
+                return axios.post('/api/predict', data)
+                    .then(function (response) {
+                        try {
+                            var data = response.data.split(',')
+                            var rate = Number(data[0]) * 100
+                            var status = Number(data[1])
+
+                            // test
+                            console.log(data)
+
+                            handleResult(status)
+
+                            showMessage('预测成功! 神经网络预测准确率为: ' + rate.toFixed(2) + '%')
+
+                        } catch (error) {
+                            console.log(error)
+                            throw error
+                        }
+                    }).catch(() => {
+                        showMessage('连接失败，请重试')
+                    })
+            }
+
+            send()
+
+        }
+
+        // 显示信息
+        function showMessage(message) {
+            var buttonClassList = document.querySelector('#predict-button').classList
+            buttonClassList.remove('loading')
+            buttonClassList.remove('disabled')
+            document.querySelector('.message').innerHTML = message
+        }
+
+        // 处理结果
+        function handleResult(status) {
+            if (status === 1) {
+                var node = document.querySelector('.radiant-predict-result')
+                node.innerHTML = '胜'
+                node.style.color = 'red'
+
+                node = document.querySelector('.dire-predict-result')
+                node.innerHTML = '败'
+                node.style.color = 'blue'
+            } else {
+                var node = document.querySelector('.dire-predict-result')
+                node.innerHTML = '胜'
+                node.style.color = 'red'
+
+                node = document.querySelector('.radiant-predict-result')
+
+                node.innerHTML = '败'
+                node.style.color = 'blue'
+            }
+        }
+
+        // 当点击预测按钮时触发
+        function onClickPredict() {
+            var data = getInputData()
+            var dataValidity = checkData(data)
+
+            // 若数据无效
+            if (!dataValidity) {
+                return document.querySelector('.message').innerHTML = '英雄选择不符合要求'
+            }
+
+            document.querySelector('.message').innerHTML = '预测中...'
+            var buttonClassList = document.querySelector('#predict-button').classList
+            buttonClassList.add('loading')
+            buttonClassList.add('disabled')
+
+            document.querySelector('.radiant-predict-result').innerHTML = ''
+            document.querySelector('.dire-predict-result').innerHTML = ''
+
+            sendData(data)
+
+            // console.log(data)
+        }
+
+        function load() {
+            $('.ui.search')
+                .search({
+                    source: data
+                })
+
+            loadInputData()
+        }
+
+        $(document).ready(load)
+    </script>
+</body>
+
+</html>
